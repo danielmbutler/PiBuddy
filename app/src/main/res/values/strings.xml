@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PiBuddy</string>
+    <string name="navigation_drawer_open">Open Nav Draw</string>
+    <string name="navigation_drawer_close">Close Nav Draw</string>
 </resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <declare-styleable name="Connection">
+        <attr name="IPAddress" format="string"/>
+        <attr name="Username" format="string"/>
+        <attr name="Password" format="string"/>
+    </declare-styleable>
+</resources>
