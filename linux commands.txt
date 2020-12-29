@@ -1,0 +1,12 @@
+CPU
+
+mpstat | grep -A 5 "%idle" | tail -n 1 | awk -F " " '{print 100 -  $ 12}'a
+
+ 
+Memory
+awk '/^Mem/ {printf("%u%%", 100*$3/$2);}' <(free -m)
+
+diskspace
+ df -hl | grep 'root' | awk 'BEGIN{print "Size(GB)","Use%"} {size+=$2;percent+=$5;} END{print size,percent}' | column -t
+
+w command : Show who is logged on and what they are doing on Linux
