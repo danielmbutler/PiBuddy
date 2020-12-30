@@ -1,0 +1,1 @@
+Lambda Parser: https://stackoverflow.com/questions/52191152/aws-firehose-transformation-lambda-putting-all-messages-in-same-s3-folder
