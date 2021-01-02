@@ -3,6 +3,9 @@ package com.example.pibuddy
 
 import android.os.Build
 import android.os.Bundle
+import android.provider.ContactsContract.CommonDataKinds.Website.URL
+import android.text.Html
+import android.text.Html.*
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.Menu
@@ -141,7 +144,7 @@ class MainActivity : AppCompatActivity() {
                         executeRemoteCommand(
                             UsernameText.text,
                             PasswordText.text,
-                            IPAddressText.text, "df -hl | grep 'root' | awk 'BEGIN{print \"Size(GB)\",\"Use%\"} {size+=\$2;percent+=\$5;} END{print size,percent}' | column -t"
+                            IPAddressText.text, "df -hl | grep \'root\' | awk \'BEGIN{print \"\"} {percent+=$5;} END{print percent}\' | column -t"
                         )
                     }
                     val MemUsage = async {
@@ -164,8 +167,16 @@ class MainActivity : AppCompatActivity() {
                     val cpuusage     = CpuUsage.await()
                     withContext(Dispatchers.Main) {
                         setContentView(R.layout.result)
+
+
+                        findViewById<View>(R.id.text_dot_loader).visibility =
+                            View.VISIBLE
+
+                        // use GetData to check for any saved data in AWS For this PI
+                        var res =  async { getData(applicationContext,APIConfig().Lambda.toString(),IPAddressText.text.toString()) }
+
                         LoggedInUsersTextView.text  = results
-                        DiskSpaceTextView.text      = diskspace
+                        DiskSpaceTextView.text      = (diskspace.replace("[^0-9a-zA-Z:,]+".toRegex(), "") + "%") //replace all special charaters due to phantom space
                         CPUusageTextView.text       = cpuusage
                         MemUsageTextView.text       = memusage
                         DiskSpaceTextView.setMovementMethod(ScrollingMovementMethod());
@@ -173,6 +184,19 @@ class MainActivity : AppCompatActivity() {
 
 
 
+
+                        var datares = arrayOf(res.await())
+                        var text = ""
+
+                        for(element in datares){
+                            text += element
+                        }
+                        AwsResultTextView.text = Html.fromHtml(text.replace("</br>","<br> </br>"))
+                        println(AwsResultTextView.text)
+                        AwsResultTextView.setMovementMethod(ScrollingMovementMethod())
+
+                        findViewById<View>(R.id.text_dot_loader).visibility =
+                            View.GONE
 
                         // store successfull connection in shared pref
 
@@ -186,8 +210,6 @@ class MainActivity : AppCompatActivity() {
 
 
                         editor.apply()
-
-
 
 
 
