@@ -3,25 +3,22 @@ package com.example.pibuddy
 
 import android.os.Build
 import android.os.Bundle
-import android.provider.ContactsContract.CommonDataKinds.Website.URL
 import android.text.Html
-import android.text.Html.*
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
+import isPortOpen
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.result.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -132,93 +129,116 @@ class MainActivity : AppCompatActivity() {
             if (validationtest == "success"){
 
                 GlobalScope.launch(Dispatchers.IO) {
-                    val LoggedInUsers = async {
-                        executeRemoteCommand(
-                            UsernameText.text,
-                            PasswordText.text,
-                            IPAddressText.text, "who | cut -d' ' -f1 | sort | uniq\n"
-                        )
-                    }
 
-                    val DiskSpace = async {
-                        executeRemoteCommand(
-                            UsernameText.text,
-                            PasswordText.text,
-                            IPAddressText.text, "df -hl | grep \'root\' | awk \'BEGIN{print \"\"} {percent+=$5;} END{print percent}\' | column -t"
-                        )
-                    }
-                    val MemUsage = async {
-                        executeRemoteCommand(
-                            UsernameText.text,
-                            PasswordText.text,
-                            IPAddressText.text, "awk '/^Mem/ {printf(\"%u%%\", 100*\$3/\$2);}' <(free -m)"
-                        )
-                    }
-                    val CpuUsage = async {
-                        executeRemoteCommand(
-                            UsernameText.text,
-                            PasswordText.text,
-                            IPAddressText.text, "mpstat | grep -A 5 \"%idle\" | tail -n 1 | awk -F \" \" '{print 100 -  \$ 12}'a"
-                        )
-                    }
-                    val results     = LoggedInUsers.await()
-                    val diskspace   = DiskSpace.await()
-                    val memusage    = MemUsage.await()
-                    val cpuusage     = CpuUsage.await()
-                    withContext(Dispatchers.Main) {
-                        setContentView(R.layout.result)
+                    //pingtest
+                    val pingtest = async{isPortOpen(IPAddressText.text.toString(),22,3000)}
+                    Log.d("pingtest",pingtest.await())
 
-
-                        findViewById<View>(R.id.text_dot_loader).visibility =
-                            View.VISIBLE
-
-                        // use GetData to check for any saved data in AWS For this PI
-                        var res =  async { getData(applicationContext,APIConfig().Lambda.toString(),IPAddressText.text.toString()) }
-
-                        LoggedInUsersTextView.text  = results
-                        DiskSpaceTextView.text      = (diskspace.replace("[^0-9a-zA-Z:,]+".toRegex(), "") + "%") //replace all special charaters due to phantom space
-                        CPUusageTextView.text       = cpuusage
-                        MemUsageTextView.text       = memusage
-                        DiskSpaceTextView.setMovementMethod(ScrollingMovementMethod());
-
-
-
-
-
-                        var datares = arrayOf(res.await())
-                        var text = ""
-
-                        for(element in datares){
-                            text += element
+                    if (pingtest.await() == "false"){
+                        withContext(Dispatchers.Main) {
+                            ConnectButton.text = "Connection failure"
                         }
-                        AwsResultTextView.text = Html.fromHtml(text.replace("</br>","<br> </br>"))
-                        println(AwsResultTextView.text)
-                        AwsResultTextView.setMovementMethod(ScrollingMovementMethod())
 
-                        findViewById<View>(R.id.text_dot_loader).visibility =
-                            View.GONE
+                    } else {
 
-                        // store successfull connection in shared pref
-
-
-                        val editor = pref.edit()
-
-
-                        val Pidata = JSONObject("""{"Username":"${UsernameText.text.toString()}", "Password":"${PasswordText.text.toString()}"}""")
-                        editor.putString(IPAddressText.text.toString(), Pidata.toString())
-
-
-
-                        editor.apply()
-
-
-
-
-                        BackButton.setOnClickListener {
-                            recreate()
-                            setContentView(R.layout.activity_main)
-
+                        val LoggedInUsers = async {
+                            executeRemoteCommand(
+                                UsernameText.text,
+                                PasswordText.text,
+                                IPAddressText.text, "who | cut -d' ' -f1 | sort | uniq\n"
+                            )
                         }
+
+                        val DiskSpace = async {
+                            executeRemoteCommand(
+                                UsernameText.text,
+                                PasswordText.text,
+                                IPAddressText.text, "df -hl | grep \'root\' | awk \'BEGIN{print \"\"} {percent+=$5;} END{print percent}\' | column -t"
+                            )
+                        }
+                        val MemUsage = async {
+                            executeRemoteCommand(
+                                UsernameText.text,
+                                PasswordText.text,
+                                IPAddressText.text, "awk '/^Mem/ {printf(\"%u%%\", 100*\$3/\$2);}' <(free -m)"
+                            )
+                        }
+                        val CpuUsage = async {
+                            executeRemoteCommand(
+                                UsernameText.text,
+                                PasswordText.text,
+                                IPAddressText.text, "mpstat | grep -A 5 \"%idle\" | tail -n 1 | awk -F \" \" '{print 100 -  \$ 12}'a"
+                            )
+                        }
+
+                        val results     = LoggedInUsers.await()
+                        val diskspace   = DiskSpace.await()
+                        val memusage    = MemUsage.await()
+                        val cpuusage     = CpuUsage.await()
+                        withContext(Dispatchers.Main) {
+                            setContentView(R.layout.result)
+
+
+                            findViewById<View>(R.id.text_dot_loader).visibility =
+                                View.VISIBLE
+
+                            // use GetData to check for any saved data in AWS For this PI
+                            var res =  async { getData(applicationContext,APIConfig().Lambda.toString(),IPAddressText.text.toString()) }
+
+                            LoggedInUsersTextView.text  = results
+                            DiskSpaceTextView.text      = (diskspace.replace("[^0-9a-zA-Z:,]+".toRegex(), "") + "%" + " used") //replace all special charaters due to phantom space
+                            CPUusageTextView.text       = cpuusage
+                            MemUsageTextView.text       = memusage
+                            DiskSpaceTextView.setMovementMethod(ScrollingMovementMethod());
+
+                            //null titles
+                            editTextTextPersonName4.keyListener = null
+                            editTextTextPersonName3.keyListener = null
+                            editTextTextPersonName2.keyListener = null
+                            editTextTextPersonName.keyListener = null
+                            ResultsTitle.keyListener = null
+
+
+
+
+
+
+                            var datares = arrayOf(res.await())
+                            var text = ""
+
+                            for(element in datares){
+                                text += element
+                            }
+                            AwsResultTextView.text = Html.fromHtml(text)
+                            println(AwsResultTextView.text)
+                            AwsResultTextView.setMovementMethod(ScrollingMovementMethod())
+
+                            findViewById<View>(R.id.text_dot_loader).visibility =
+                                View.GONE
+
+                            // store successfull connection in shared pref
+
+
+                            val editor = pref.edit()
+
+
+                            val Pidata = JSONObject("""{"Username":"${UsernameText.text.toString()}", "Password":"${PasswordText.text.toString()}"}""")
+                            editor.putString(IPAddressText.text.toString(), Pidata.toString())
+
+
+
+                            editor.apply()
+
+
+
+
+                            BackButton.setOnClickListener {
+                                recreate()
+                                setContentView(R.layout.activity_main)
+
+                            }
+                        }
+
                     }
 
 

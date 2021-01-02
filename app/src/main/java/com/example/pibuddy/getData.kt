@@ -49,7 +49,7 @@ suspend fun getData(context: Context, endpoint: String , ip: String) = suspendCo
                     .parseJsonObject(StringReader(response.toString()))
 
 
-                cont.resume(trimmedres.replace("\\[(.*?)]".toRegex(), "").replace("$.",", ").replace("Z,","<br/>").replace("T"," "))
+                cont.resume(trimmedres.replace("\\[(.*?)]".toRegex(), "").replace("$.",", ").replace("Z,","</p>").replace("T"," ").replace("IP","<p>IP"))
 
 
 
