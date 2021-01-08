@@ -17,6 +17,7 @@ import isPortOpen
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.result.*
 import kotlinx.coroutines.*
+import org.apache.commons.net.util.SubnetUtils
 import org.json.JSONObject
 
 
@@ -41,12 +42,34 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private suspend fun NetworkScanIP(): Array<String> {
+        //ping scan test
+
+        val utils = SubnetUtils("192.168.1.0/24")
+        val allIps: Array<String> = utils.getInfo().getAllAddresses()
+//appIps will contain all the ip address in the subnet
+        return allIps
+
+    }
 
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        GlobalScope.launch (Dispatchers.IO) {
+            val netAddresses =  async { NetworkScanIP() }
+            var addresscount = netAddresses.await().count()
+
+                netAddresses.await().forEach {
+                    val pingtest = async{isPortOpen(it.toString(),22,3000)}
+                    Log.d("pingtest",it.toString() + " " + pingtest.await())
+                    addresscount --
+                    Log.d("IPCount", (addresscount).toString())
+            }
+
+        }
 
 
         // slider

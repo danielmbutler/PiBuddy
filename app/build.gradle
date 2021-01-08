@@ -65,4 +65,8 @@ dependencies {
 
     //implementation 'com.github.bhargavms:DotLoader:1.1.1'
     implementation'com.eyalbira.loadingdots:loading-dots:1.0.2'
+
+    //network scan
+
+    implementation group: 'commons-net', name: 'commons-net', version: '3.6'
 }

@@ -3,6 +3,7 @@ import java.io.InputStreamReader
 import java.net.ConnectException
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.SocketTimeoutException
 
 
 fun isPortOpen(ip : String, port : Int, timeout : Int): String {
@@ -18,6 +19,11 @@ fun isPortOpen(ip : String, port : Int, timeout : Int): String {
 
     catch(ce: ConnectException){
         ce.printStackTrace();
+        return "false"
+    }
+
+    catch(ce: SocketTimeoutException){
+
         return "false"
     }
 
