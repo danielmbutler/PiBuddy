@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Scan_Activity">
+
+    <TextView
+        android:id="@+id/Scan_View_Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/Scan_View_RecyclerView"
+        android:layout_width="410dp"
+        android:layout_height="213dp"
+        android:layout_marginBottom="116dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@+id/Scanning_Text_View"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.eyalbira.loadingdots.LoadingDots
+        android:id="@+id/Scan_View_text_dot_loader"
+        android:layout_width="168dp"
+        android:layout_height="21dp"
+        android:layout_marginTop="424dp"
+        android:accessibilityLiveRegion="assertive"
+        android:duplicateParentState="true"
+        app:LoadingDots_dots_color="@android:color/holo_green_light"
+        app:LoadingDots_dots_count="4"
+        app:LoadingDots_dots_size="9dp"
+        app:LoadingDots_dots_space="5dp"
+        app:LoadingDots_jump_duration="900"
+        app:LoadingDots_loop_duration="1200"
+        app:LoadingDots_loop_start_delay="100"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/Scan_View_RecyclerView"
+        tools:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/Scanning_Text_View"
+        android:layout_width="182dp"
+        android:layout_height="72dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.528"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.655"
+        tools:visibility="invisible" />
+</androidx.constraintlayout.widget.ConstraintLayout>

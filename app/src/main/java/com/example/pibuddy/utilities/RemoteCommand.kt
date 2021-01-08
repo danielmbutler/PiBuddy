@@ -1,4 +1,4 @@
-package com.example.pibuddy
+package com.example.pibuddy.utilities
 
 import android.content.Context
 import android.text.Editable

@@ -1,9 +1,9 @@
 package com.example.pibuddy
 
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.text.Html
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.View
@@ -12,8 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.example.pibuddy.utilities.executeRemoteCommand
 import com.google.android.material.navigation.NavigationView
-import isPortOpen
+import com.example.pibuddy.utilities.isPortOpen
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.result.*
 import kotlinx.coroutines.*
@@ -42,14 +43,16 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-
         // slider
+
+        ScanButton.setOnClickListener {
+            val intent = Intent(this, Scan_Activity::class.java)
+            startActivity(intent)
+        }
 
         var drawer: DrawerLayout? = null
 
@@ -131,7 +134,13 @@ class MainActivity : AppCompatActivity() {
                 GlobalScope.launch(Dispatchers.IO) {
 
                     //pingtest
-                    val pingtest = async{isPortOpen(IPAddressText.text.toString(),22,3000)}
+                    val pingtest = async{
+                        isPortOpen(
+                            IPAddressText.text.toString(),
+                            22,
+                            3000
+                        )
+                    }
                     Log.d("pingtest",pingtest.await())
 
                     if (pingtest.await() == "false"){
@@ -153,21 +162,24 @@ class MainActivity : AppCompatActivity() {
                             executeRemoteCommand(
                                 UsernameText.text,
                                 PasswordText.text,
-                                IPAddressText.text, "df -hl | grep \'root\' | awk \'BEGIN{print \"\"} {percent+=$5;} END{print percent}\' | column -t"
+                                IPAddressText.text,
+                                "df -hl | grep \'root\' | awk \'BEGIN{print \"\"} {percent+=$5;} END{print percent}\' | column -t"
                             )
                         }
                         val MemUsage = async {
                             executeRemoteCommand(
                                 UsernameText.text,
                                 PasswordText.text,
-                                IPAddressText.text, "awk '/^Mem/ {printf(\"%u%%\", 100*\$3/\$2);}' <(free -m)"
+                                IPAddressText.text,
+                                "awk '/^Mem/ {printf(\"%u%%\", 100*\$3/\$2);}' <(free -m)"
                             )
                         }
                         val CpuUsage = async {
                             executeRemoteCommand(
                                 UsernameText.text,
                                 PasswordText.text,
-                                IPAddressText.text, "mpstat | grep -A 5 \"%idle\" | tail -n 1 | awk -F \" \" '{print 100 -  \$ 12}'a"
+                                IPAddressText.text,
+                                "mpstat | grep -A 5 \"%idle\" | tail -n 1 | awk -F \" \" '{print 100 -  \$ 12}'a"
                             )
                         }
 
@@ -179,11 +191,9 @@ class MainActivity : AppCompatActivity() {
                             setContentView(R.layout.result)
 
 
-                            findViewById<View>(R.id.text_dot_loader).visibility =
+                            findViewById<View>(R.id.Scan_View_text_dot_loader).visibility =
                                 View.VISIBLE
 
-                            // use GetData to check for any saved data in AWS For this PI
-                            var res =  async { getData(applicationContext,APIConfig().Lambda.toString(),IPAddressText.text.toString()) }
 
                             LoggedInUsersTextView.text  = results
                             DiskSpaceTextView.text      = (diskspace.replace("[^0-9a-zA-Z:,]+".toRegex(), "") + "%" + " used") //replace all special charaters due to phantom space
@@ -191,7 +201,7 @@ class MainActivity : AppCompatActivity() {
                             MemUsageTextView.text       = memusage
                             DiskSpaceTextView.setMovementMethod(ScrollingMovementMethod());
 
-                            //null titles
+                            //null titles so you cant edit
                             editTextTextPersonName4.keyListener = null
                             editTextTextPersonName3.keyListener = null
                             editTextTextPersonName2.keyListener = null
@@ -199,21 +209,7 @@ class MainActivity : AppCompatActivity() {
                             ResultsTitle.keyListener = null
 
 
-
-
-
-
-                            var datares = arrayOf(res.await())
-                            var text = ""
-
-                            for(element in datares){
-                                text += element
-                            }
-                            AwsResultTextView.text = Html.fromHtml(text)
-                            println(AwsResultTextView.text)
-                            AwsResultTextView.setMovementMethod(ScrollingMovementMethod())
-
-                            findViewById<View>(R.id.text_dot_loader).visibility =
+                            findViewById<View>(R.id.Scan_View_text_dot_loader).visibility =
                                 View.GONE
 
                             // store successfull connection in shared pref
